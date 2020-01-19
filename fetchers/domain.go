@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-func FetchDomain(domain string) {
+func FetchDomainIp(domain string) {
 	ip, err := net.LookupIP(domain)
 
 	if err != nil {

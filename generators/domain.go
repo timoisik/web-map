@@ -1,20 +1,24 @@
 package generators
 
-var alphabet = []string{"a", "b", "c"}
+//var alphabet = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s",
+//	"t", "u", "v", "w", "x", "y", "z"}
+
+var alphabet = []string{"a", "b", "c"} // Using only three letters for testing
 
 var tlds = [...]string{"de"}
 
+var maxDomainLength = 3 // 5 for production and 3 for testing
+
 func GenerateDomains(domainsChannel chan string) {
-	combinations("", 1, domainsChannel)
+	combinations("", domainsChannel)
 	close(domainsChannel)
 }
 
-func combinations(prefix string, length int, ch chan string) {
-
+func combinations(prefix string, ch chan string) {
 	for i := 0; i < len(alphabet); i++  {
 		domain := prefix + alphabet[i]
 
-		if length > len(alphabet){
+		if len(domain) > maxDomainLength {
 			return
 		}
 
@@ -22,6 +26,6 @@ func combinations(prefix string, length int, ch chan string) {
 			ch <- domain + "." + tlds[j]
 		}
 
-		combinations(domain, length + 1, ch)
+		combinations(domain, ch)
 	}
 }

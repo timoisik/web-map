@@ -10,6 +10,6 @@ func main() {
 	go generators.GenerateDomains(domainsChannel)
 
 	for domain := range domainsChannel {
-		fetchers.FetchDomain(domain)
+		fetchers.FetchDomainIp(domain)
 	}
 }
