@@ -1,17 +1,16 @@
 package fetchers
 
 import (
-	"fmt"
+	"github.com/timoisik/web-map/models"
 	"net"
 )
 
-func FetchDomainIp(domain string) {
-	ip, err := net.LookupIP(domain)
+func FetchDomainIp(domain models.Domain) ([]net.IP, error) {
+	ip, err := net.LookupIP(domain.GetUrl())
 
 	if err != nil {
-		fmt.Printf("No ip for domain %v\n", domain)
-		return
+		return nil, err
 	}
 
-	fmt.Printf("Domain %v exists at %v\n", domain, ip)
+	return ip, nil
 }
