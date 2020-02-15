@@ -9,9 +9,14 @@ to generate domains. It then checks if these domains are registered.
 Within a generator the program will create random strings for domain names (e. g. a.de,
 aa.de, aaa.de, b.de, ...).
 
-### Crawl Domains
+### Crawl Search Engines
 
-Todo
+Todo: Query search engines with words from dictionaries, e.g. House, Car, Door, ... to 
+receive result pages with domains.  
+
+### Crawl websites for Domains
+
+Todo: If a domain exists, we can crawl this website for more domains.
 
 ### Domain Checks
 
