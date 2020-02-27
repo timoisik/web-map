@@ -38,6 +38,6 @@ func generateDomains() {
 	go generators.GenerateDomains(domainsChannel)
 
 	for domain := range domainsChannel {
-		domain.Create()
+		models.Db.Create(&domain)
 	}
 }

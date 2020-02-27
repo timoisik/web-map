@@ -1,21 +1,23 @@
 package models
 
 import (
-	"context"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"log"
 )
 
-var Db *mongo.Collection
+var Db *gorm.DB
 
 func InitDB() {
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
-	client, err := mongo.Connect(context.TODO(), clientOptions)
+	var err error
+	Db, err = gorm.Open("postgres", "host=localhost port=5432 user=wemp dbname=wemp password=wemp sslmode=disable")
 
 	if err != nil {
 		log.Panic(err)
 	}
 
-	Db = client.Database("webmap").Collection("domains")
+	Db.AutoMigrate(
+		&Domain{},
+		&Ip{},
+	)
 }

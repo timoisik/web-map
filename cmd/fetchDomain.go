@@ -2,11 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spf13/cobra"
 	"github.com/timoisik/web-map/fetchers"
 	"github.com/timoisik/web-map/models"
-	"go.mongodb.org/mongo-driver/bson"
-
-	"github.com/spf13/cobra"
 )
 
 // fetchDomainCmd represents the fetchDomain command
@@ -36,24 +34,21 @@ func init() {
 func fetchDomains() {
 	fmt.Println("fetchDomain called")
 
-	domains := models.ReadAll()
+	var domains []models.Domain
+	models.Db.Find(&domains)
 
 	for _, domain := range domains {
 		fmt.Printf("Fetch domain %v\n", domain.GetUrl())
 
-		ip, err := fetchers.FetchDomainIp(*domain)
+		ips, err := fetchers.FetchDomainIp(domain)
+		if err == nil {
+			for _, ipAddress := range ips {
 
-		if err != nil {
-			domain.Delete()
-		} else {
-			domain.Update(bson.D{
-				{"$set", bson.D{
-					{"ips", ip},
-				}},
-				{"$currentDate", bson.D{
-					{"fetchedat", true},
-				}},
-			})
+				// Check if ip address exists in db
+				var ip models.Ip
+				models.Db.FirstOrCreate(&ip, models.Ip{Address: ipAddress.String()})
+				models.Db.Model(domain).Association("IpAddresses").Append(ip)
+			}
 		}
 	}
 }
