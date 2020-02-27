@@ -49,6 +49,31 @@ func (d *Domain) Read(b bson.D) Domain {
 	return result
 }
 
+func ReadAll() []*Domain {
+	var result []*Domain
+
+	cur, err := Db.Find(context.TODO(), bson.D{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for cur.Next(context.TODO()) {
+		var domain Domain
+		err := cur.Decode(&domain)
+		if err != nil {
+			log.Fatal(err)
+		}
+		result = append(result, &domain)
+	}
+
+	err = cur.Close(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return result
+}
+
 func (d *Domain) Update(b bson.D) {
 	filter := bson.D{{"_id", d.Id}}
 	Db.UpdateOne(context.TODO(), filter, b)
