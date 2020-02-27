@@ -13,7 +13,7 @@ var tlds = [...]string{"de"}
 
 var maxDomainLength = 3 // 5 for production and 3 for testing
 
-func GenerateDomains(domainsChannel chan models.Domain) {
+func GenerateDomainsByChars(domainsChannel chan models.Domain) {
 	combinations("", domainsChannel)
 	close(domainsChannel)
 }

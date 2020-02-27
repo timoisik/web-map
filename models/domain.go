@@ -10,7 +10,6 @@ type Domain struct {
 	FetchedAt *time.Time
 	Name string
 	Tld string
-	// Ips []net.IP
 	IpAddresses []Ip `gorm:"many2many:domain_ip_address;"`
 }
 

@@ -13,31 +13,37 @@ var generateDomainCmd = &cobra.Command{
 	Short: "Generates domain",
 	Long: `Generates domains for later usage.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		generateDomains()
+		generateDomains(cmd)
 	},
 }
 
 func init() {
 	generateCmd.AddCommand(generateDomainCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// generateDomainCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// generateDomainCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	generateDomainCmd.Flags().BoolP("chars", "c", false, "Generate domains by combination of chars")
+	generateDomainCmd.Flags().BoolP("crawl", "r", false, "Generate domains by crawling existing domains")
+	generateDomainCmd.Flags().StringP("seed", "s", "", "Generate domain by given seeder list")
 }
 
-func generateDomains() {
+func generateDomains(cmd *cobra.Command) {
 	fmt.Println("generateDomain called")
 
+	chars, _ := cmd.Flags().GetBool("chars")
+	crawl, _ := cmd.Flags().GetBool("crawl")
+	seed, _ := cmd.Flags().GetString("seed")
+
 	domainsChannel := make(chan models.Domain)
-	go generators.GenerateDomains(domainsChannel)
+
+	if chars {
+		go generators.GenerateDomainsByChars(domainsChannel)
+	} else if crawl {
+		fmt.Println("crawl")
+	} else if len(seed) > 0 {
+		go generators.GenerateBySeeder(domainsChannel, seed)
+	}
 
 	for domain := range domainsChannel {
-		models.Db.Create(&domain)
+		var d models.Domain
+		models.Db.FirstOrCreate(&d, domain)
 	}
 }
