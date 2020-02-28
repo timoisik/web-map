@@ -7,16 +7,22 @@ import (
 
 type Domain struct {
 	gorm.Model
-	FetchedAt *time.Time
+	FetchedAt time.Time
+	CrawledAt time.Time
 	Name string
 	Tld string
 	IpAddresses []Ip `gorm:"many2many:domain_ip_address;"`
 }
 
-func (d *Domain) HasBeenChecked() bool {
-	return d.FetchedAt.IsZero()
-}
-
 func (d *Domain) GetUrl() string {
 	return d.Name + "." + d.Tld
+}
+
+func (d *Domain) HasBeenCrawled() bool {
+	return !d.CrawledAt.IsZero()
+}
+
+func (d *Domain) MarkAsCrawled() {
+	d.CrawledAt = time.Now()
+	Db.Save(d)
 }

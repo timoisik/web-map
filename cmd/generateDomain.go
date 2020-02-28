@@ -37,7 +37,7 @@ func generateDomains(cmd *cobra.Command) {
 	if chars {
 		go generators.GenerateDomainsByChars(domainsChannel)
 	} else if crawl {
-		fmt.Println("crawl")
+		go generators.GenerateDomainsByCrawling(domainsChannel)
 	} else if len(seed) > 0 {
 		go generators.GenerateBySeeder(domainsChannel, seed)
 	}
