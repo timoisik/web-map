@@ -18,11 +18,21 @@ func (d *Domain) GetUrl() string {
 	return d.Name + "." + d.Tld
 }
 
+func (d *Domain) Exists() bool {
+	var domain Domain
+	Db.Where("name = ? and tld = ?", d.Name, d.Tld).Find(&domain)
+	return domain.Name != ""
+}
+
 func (d *Domain) HasBeenCrawled() bool {
-	return !d.CrawledAt.IsZero()
+	var domain Domain
+	Db.Where("name = ? and tld = ?", d.Name, d.Tld).Find(&domain)
+	return !domain.CrawledAt.IsZero()
 }
 
 func (d *Domain) MarkAsCrawled() {
-	d.CrawledAt = time.Now()
-	Db.Save(d)
+	var domain Domain
+	Db.Where("name = ? and tld = ?", d.Name, d.Tld).Find(&domain)
+	domain.CrawledAt = time.Now()
+	Db.Save(&domain)
 }

@@ -43,7 +43,8 @@ func generateDomains(cmd *cobra.Command) {
 	}
 
 	for domain := range domainsChannel {
-		var d models.Domain
-		models.Db.FirstOrCreate(&d, domain)
+		if !domain.Exists() { // check on domain name and tld
+			models.Db.Create(&domain)
+		}
 	}
 }
