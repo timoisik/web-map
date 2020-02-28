@@ -6,18 +6,25 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
+	"sync"
 )
 
 func GenerateDomainsByCrawling(domainsChannel chan models.Domain) {
 	var domains []models.Domain
 	models.Db.Where("crawled_at is null or crawled_at = ?", "0001-01-01 00:00:00+00").Find(&domains)
 
+	var wg sync.WaitGroup
+
 	for _, domain := range domains {
-		crawlDomain(domainsChannel, domain)
+		wg.Add(1)
+		crawlDomain(domainsChannel, &wg, domain)
 	}
+
+	wg.Wait()
+	close(domainsChannel)
 }
 
-func crawlDomain(domainsChannel chan models.Domain, domain models.Domain) {
+func crawlDomain(domainsChannel chan models.Domain, wg *sync.WaitGroup, domain models.Domain) {
 	fmt.Printf("Crawling: %v\n", domain.GetUrl())
 
 	url := fmt.Sprintf("http://%v", domain.GetUrl())
@@ -34,10 +41,10 @@ func crawlDomain(domainsChannel chan models.Domain, domain models.Domain) {
 		fmt.Printf("Cannot read response Body for url %v\n", domain.GetUrl())
 	}
 
-	domain.MarkAsCrawled()
-
 	re := regexp.MustCompile(`(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?`)
 	foundDomains := re.FindAllString(string(html), -1)
+
+	domain.MarkAsCrawled()
 
 	for _, foundDomain := range foundDomains {
 		regexDomain := regexp.MustCompile(`^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)\.([^:\/\n]+)`)
@@ -49,7 +56,10 @@ func crawlDomain(domainsChannel chan models.Domain, domain models.Domain) {
 		}
 
 		if !newDomain.HasBeenCrawled() {
-			go crawlDomain(domainsChannel, newDomain)
+			wg.Add(1)
+			go crawlDomain(domainsChannel, wg, newDomain)
 		}
 	}
+
+	wg.Done()
 }
